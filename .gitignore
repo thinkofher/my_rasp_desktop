@@ -1,0 +1,8 @@
+# Visual Studio Code
+/.vscode
+
+# file with my secret key that i cant show you
+secret_key.json
+
+# because of __pycache__
+*.pyc
