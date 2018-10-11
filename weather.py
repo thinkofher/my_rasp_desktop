@@ -1,5 +1,6 @@
 import json
 from urllib.request import urlopen
+from datetime import datetime
 
 Cracow = {
     "latitude": 50.0646,
@@ -30,9 +31,18 @@ with urlopen(weather_api_url) as response:
 data = json.loads(source)
 
 current_data = data['currently']
+time_of_downloads = data['currently']['time']
+time_of_downloads = datetime.fromtimestamp(
+    int(time_of_downloads)
+    ).strftime("%A, %B %d, %Y %I:%M:%S")
 
 print(
     "Actual teperature in Cracow is {} Celcius degrees.".format(
         round(float(current_data['temperature']))
+    )
+)
+
+print('Actualization from {}'.format(
+        time_of_downloads
     )
 )
