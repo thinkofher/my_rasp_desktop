@@ -33,7 +33,7 @@ print(
     )
 )
 
-print('Actualization from {}'.format(
+print('Actualization from {}.'.format(
         datetime.fromtimestamp(
             int(data['currently']['time'])
             ).strftime("%A, %B %d, %Y %H:%M:%S")
@@ -58,7 +58,7 @@ while (True):
             )
         )
 
-        print('Actualization from {}'.format(
+        print('Actualization from {}.'.format(
                 datetime.fromtimestamp(
                     int(data['currently']['time'])
                     ).strftime("%A, %B %d, %Y %H:%M:%S")
