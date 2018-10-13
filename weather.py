@@ -1,6 +1,10 @@
+# weather.py
+
 import json
-from urllib.request import urlopen
 from datetime import datetime
+from tools import (
+    load_json_file, save_json_file, current_time, load_json_weather
+    )
 
 Cracow = {
     "latitude": 50.0646,
@@ -25,20 +29,13 @@ weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
     'units=si'
 )
 
-
-def load_json_weather(url):
-    with urlopen(url) as response:
-        source = json.loads(response.read())
-    return source
-
-
 data = load_json_weather(weather_api_url)
 
 current_data = data['currently']
 time_of_downloads = data['currently']['time']
 time_of_downloads = datetime.fromtimestamp(
     int(time_of_downloads)
-    ).strftime("%A, %B %d, %Y %I:%M:%S")
+    ).strftime("%A, %B %d, %Y %H:%M:%S")
 
 print(
     "Actual teperature in Cracow is {} Celcius degrees.".format(
@@ -50,3 +47,27 @@ print('Actualization from {}'.format(
         time_of_downloads
     )
 )
+
+save_json_file('last_data.json', data)
+
+while (True):
+    last_data = load_json_file('last_data.json')
+    time_of_download = int(
+        last_data['currently']['time']
+    )
+    if current_time() >= time_of_download+60:
+        data = load_json_weather(weather_api_url)
+        save_json_file('last_data.json', data)
+
+        print(
+           "Actual teperature in Cracow is {} Celcius degrees.".format(
+                round(float(data['currently']['temperature']))
+            )
+        )
+
+        print('Actualization from {}'.format(
+                datetime.fromtimestamp(
+                    int(data['currently']['time'])
+                    ).strftime("%A, %B %d, %Y %H:%M:%S")
+            )
+        )

@@ -6,6 +6,7 @@ secret_key.json
 
 # json files
 actual_weather.json
+last_data.json
 
 # because of __pycache__
 *.pyc
