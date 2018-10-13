@@ -1,0 +1,17 @@
+{
+    "Cracow":{
+        "name": "Cracow",
+        "latitude": 50.0646,
+        "longitude": 19.9449
+    },
+    "Kielce":{
+        "name": "Kielce",
+        "latitude": 50.8661,
+        "longitude": 20.6286
+    },
+    "Lodz":{
+        "name": "Lodz",
+        "latitude": 51.7594,
+        "longitude": 19.4572
+    }
+}
