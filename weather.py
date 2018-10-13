@@ -25,10 +25,14 @@ weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
     'units=si'
 )
 
-with urlopen(weather_api_url) as response:
-    source = response.read()
 
-data = json.loads(source)
+def load_json_weather(url):
+    with urlopen(url) as response:
+        source = json.loads(response.read())
+    return source
+
+
+data = load_json_weather(weather_api_url)
 
 current_data = data['currently']
 time_of_downloads = data['currently']['time']
