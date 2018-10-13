@@ -1,11 +1,11 @@
 # weather.py
 
-import json
 from datetime import datetime
 from pathlib import Path
 from tools import (
     load_json_file, save_json_file,
-    current_time, load_json_weather
+    load_json_weather, load_secret_key,
+    current_time
     )
 
 
@@ -16,17 +16,7 @@ cities = Path('data/cities.json')
 citiDict = load_json_file(cities)
 city = citiDict['Lodz']
 
-try:
-    with open(secretkeyPath, 'r') as key:
-        secret_key = json.loads(key.read())['secret']
-except FileNotFoundError:
-    secret_key = input("Please enter you secret key: ")
-    new_json_file = {
-        "secret": secret_key
-    }
-    with open(secretkeyPath, 'w') as file:
-        file.write(json.dumps(new_json_file, indent=2))
-
+secret_key = load_secret_key(secretkeyPath)
 weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
     secret_key,
     city['latitude'],
@@ -36,21 +26,17 @@ weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
 
 data = load_json_weather(weather_api_url)
 
-current_data = data['currently']
-time_of_downloads = data['currently']['time']
-time_of_downloads = datetime.fromtimestamp(
-    int(time_of_downloads)
-    ).strftime("%A, %B %d, %Y %H:%M:%S")
-
 print(
     "Actual teperature in {} is {} Celcius degrees.".format(
         city['name'],
-        round(float(current_data['temperature']))
+        round(float(data['currently']['temperature']))
     )
 )
 
 print('Actualization from {}'.format(
-        time_of_downloads
+        datetime.fromtimestamp(
+            int(data['currently']['time'])
+            ).strftime("%A, %B %d, %Y %H:%M:%S")
     )
 )
 

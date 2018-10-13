@@ -19,6 +19,21 @@ def random_key(length):
     return key
 
 
+def load_secret_key(path):
+    try:
+        with open(path, 'r') as key:
+            secret_key = json.loads(key.read())['secret']
+    except FileNotFoundError:
+        secret_key = input("Please enter you secret key: ")
+        new_json_file = {
+            "secret": secret_key
+        }
+        with open(path, 'w') as file:
+            file.write(json.dumps(new_json_file, indent=2))
+
+    return secret_key
+
+
 def load_json_file(path):
     '''
     Returning dictionary from given path
