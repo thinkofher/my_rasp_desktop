@@ -8,6 +8,7 @@ from datetime import datetime
 from math import floor
 
 
+# FIXME: maybe i won't use this after all
 def random_key(length):
     '''
     Creating random string with given length.
