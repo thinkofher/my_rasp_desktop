@@ -77,7 +77,7 @@ while (True):
         old_message_1 = message_1
         old_message_2 = message_2
     
-    if current_time() >= time_of_download+60:
+    if current_time() >= time_of_download+(5*60):
         data = load_json_weather(weather_api_url)
         save_json_file(lastdataPath, data)
 
