@@ -187,6 +187,7 @@ class MainMenu(Menu):
 
 class MenuOption(object):
 
+
     def __init__(self, option_name):
 
         self._option_name = option_name
@@ -223,6 +224,7 @@ class MenuOption(object):
 
 class CityOption(MenuOption):
 
+
     def __init__(self, city, secret_key, visible_name=False):
 
         self._option_name = city['name']
@@ -254,6 +256,7 @@ class CityOption(MenuOption):
         )
         self._noData = True
 
+
     def weather_json(self):
         try:
             self._json_weather = load_json_weather(
@@ -273,6 +276,7 @@ class CityOption(MenuOption):
                 self._noData = False
             except FileNotFoundError:
                 self._noData = True
+
 
     def current_temp(self):
 
