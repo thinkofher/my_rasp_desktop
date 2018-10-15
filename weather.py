@@ -93,7 +93,7 @@ while (True):
     # update lcd view
     if (
         (old_message_1 != message_1) or
-        (old_message_2 != message_2)
+            (old_message_2 != message_2)
     ):
         lcd.clear()
         lcd.message(message_1+message_2)
