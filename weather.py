@@ -7,7 +7,7 @@ from tools import (
     load_json_weather, load_secret_key,
     current_time
     )
-from lcd import lcd
+from tools import lcd
 from urllib.error import URLError
 
 secretkeyPath = Path('data/secret_key.json')

@@ -1,3 +1,5 @@
+# tools/lcd/lcd.py
+
 import Adafruit_CharLCD as LCD
 
 # Raspberry Pi pin configuration:

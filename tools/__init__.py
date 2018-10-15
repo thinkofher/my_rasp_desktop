@@ -4,8 +4,11 @@ from tools.tools import (
     load_secret_key, current_time
     )
 
+from tools.lcd import lcd
+
 __all__ = [
     'random_key', 'save_json_file',
     'load_json_file', 'load_json_weather',
-    'load_secret_key', 'current_time'
+    'load_secret_key', 'current_time',
+    'lcd'
 ]
