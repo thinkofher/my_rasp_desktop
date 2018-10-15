@@ -10,7 +10,7 @@ lcd_d7 = 18
 
 # Define LCD column and row size for 16x2 LCD.
 lcd_columns = 16
-lcd_rows    = 2
+lcd_rows = 2
 
 # Initialize the LCD using the pins above.
 lcd = LCD.Adafruit_CharLCD(
