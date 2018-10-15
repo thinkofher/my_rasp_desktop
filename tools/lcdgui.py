@@ -27,12 +27,6 @@ class Menu(object, metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def _show_options(self):
-        raise NotImplementedError(
-            'You have to define __show_options method!'
-        )
-
-    @abc.abstractmethod
     def _closing(self):
         raise NotImplementedError(
             'You have to define __closing method!'
@@ -80,7 +74,7 @@ class Menu(object, metaclass=abc.ABCMeta):
                     self._lcd.message(message)
 
                 # Keeping 2 items per line
-                if (i+1)%2 == 0:
+                if (i+1) % 2 == 0:
                     self._lcd.message('\n')
                 else:
                     self._lcd.message('  ')
@@ -92,11 +86,10 @@ class Menu(object, metaclass=abc.ABCMeta):
 
 class MainMenu(Menu):
 
-
     def __init__(
         self, lcd_class, prev_button=0,
         next_button=0, cancel_button=0,
-        ok_button=0, subMenu = False
+        ok_button=0, subMenu=False
     ):
         self.__wait_time = 5*60
         self._menu_options = []
@@ -119,7 +112,6 @@ class MainMenu(Menu):
         GPIO.setmode(GPIO.BCM)
         for pin in self._pins:
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
 
     def main_loop(self):
         try:
@@ -185,7 +177,7 @@ class MainMenu(Menu):
 
     def _show_status(self):
         self._updatae_time()
-        
+
         # updating data
         try:
             if current_time() >= (
@@ -193,7 +185,7 @@ class MainMenu(Menu):
                     (self.__wait_time)
             ):
                 self.__subMenu.update_city_data()
-        
+
         # offline and no old data
         except TypeError:
             pass
@@ -219,20 +211,19 @@ class MainMenu(Menu):
 
         if self.__subMenu.is_Offline_actual_city():
             self._lcd.message(' OFFLINE')
-            
+
             # maybe is offline now?
             self.__subMenu.update_city_data()
 
 
 class WeatherMenu(MainMenu):
 
-
     # added new __init__ because of self.__first_city
     # TODO: find some magic to fix this
     def __init__(
         self, lcd_class, prev_button=0,
         next_button=0, cancel_button=0,
-        ok_button=0, subMenu = False
+        ok_button=0, subMenu=False
     ):
         self._menu_options = []
         self._lcd = lcd_class
@@ -256,7 +247,6 @@ class WeatherMenu(MainMenu):
         for pin in self._pins:
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-
     # like above, beacause of self.__first_city
     def add_menu_option(self, option):
         self._menu_options.append(option)
@@ -266,7 +256,6 @@ class WeatherMenu(MainMenu):
             ]
             self.__first_city = False
             self.update_city_data()
-
 
     def main_loop(self):
         self._actual_position = 0
@@ -326,23 +315,22 @@ class WeatherMenu(MainMenu):
     def get_actual_city_full_name(self):
 
         return self._actual_city.get_city_full_name()
-    
+
     def get_actual_city_down_time(self):
-        
+
         return self._actual_city.get_city_download_time()
-        
+
     def update_city_data(self):
         self._actual_city.weather_json()
-    
+
     def is_Offline_actual_city(self):
         return self._actual_city.is_Offline()
-    
+
     def is_Data_actual_city(self):
         return self._actual_city.check_data()
 
 
 class MenuOption(object):
-
 
     def __init__(self, option_name):
 
@@ -380,7 +368,6 @@ class MenuOption(object):
 
 class CityOption(MenuOption):
 
-
     def __init__(self, city, secret_key, visible_name=False, full_name=False):
 
         self._option_name = city['name']
@@ -402,11 +389,13 @@ class CityOption(MenuOption):
         self.__latitude = city['latitude']
         self.__longitude = city['longitude']
 
-        self.__weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
-            secret_key,
-            self.__latitude,
-            self.__longitude,
-            'units=si'
+        self.__weather_api_url = (
+            "https://api.darksky.net/forecast/{}/{},{}?{}".format(
+                secret_key,
+                self.__latitude,
+                self.__longitude,
+                'units=si'
+                )
             )
         self._old_data_path = Path(
             'data/{}.json'.format(
@@ -435,7 +424,6 @@ class CityOption(MenuOption):
             except FileNotFoundError:
                 self._isData = False
 
-
     def current_temp(self):
 
         if self._json_weather:
@@ -459,9 +447,9 @@ class CityOption(MenuOption):
         return int(
             self._json_weather['currently']['time']
         )
-    
+
     def check_data(self):
         return self._isData
-    
+
     def is_Offline(self):
         return self._isOffline

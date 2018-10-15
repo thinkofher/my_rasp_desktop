@@ -66,13 +66,13 @@ while (True):
     time_of_download = int(
         last_data['currently']['time']
     )
-    
+
     message_1 = '{} {}{}C\n'.format(
         city['name'],
         round(float(last_data['currently']['temperature'])),
         chr(223)
     )
-    
+
     # view special OFFLINE message on lcd
     # if offline is True
     if not offline:
@@ -87,8 +87,7 @@ while (True):
                 current_time()
             ).strftime("%H:%M:%S")
         )
-        
-    
+
     # if something changed in messages
     # update lcd view
     if (
@@ -99,14 +98,14 @@ while (True):
         lcd.message(message_1+message_2)
         old_message_1 = message_1
         old_message_2 = message_2
-    
+
     # if machine is offline, program should
     # try to check weather more often
     if offline:
         wait_time = 15
     else:
         wait_time = 5*60
-    
+
     if current_time() >= time_of_download+(wait_time):
         try:
             # if online download newest data from dark sky api
