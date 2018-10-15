@@ -53,7 +53,7 @@ class Menu(object, metaclass=abc.ABCMeta):
 
     def what_position(self):
         return self._actual_position
-    
+
     def _show_options(self):
         try:
             for i in range(len(self._menu_options)):
@@ -92,11 +92,13 @@ class Menu(object, metaclass=abc.ABCMeta):
 
 class MainMenu(Menu):
 
+
     def __init__(
         self, lcd_class, prev_button=0,
         next_button=0, cancel_button=0,
         ok_button=0, subMenu = False
     ):
+        self.__wait_time = 5*60
         self._menu_options = []
         self._lcd = lcd_class
         self._actual_position = 0
@@ -117,6 +119,7 @@ class MainMenu(Menu):
         GPIO.setmode(GPIO.BCM)
         for pin in self._pins:
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
     def main_loop(self):
         try:
@@ -142,8 +145,9 @@ class MainMenu(Menu):
 
                 # choosing item
                 if not GPIO.input(self._pins[1]):
+                    time.sleep(0.2)
                     try:
-                        __subMenu.main_loop()
+                        self.__subMenu.main_loop()
                     except NameError:
                         pass
 
@@ -154,7 +158,7 @@ class MainMenu(Menu):
 
         except AttributeError:
             self._lcd.clear()
-            self._lcd.message('NO OPTIONS')
+            self._lcd.message('NO OPTIONS 1')
 
     def _closing(self):
         while True:
@@ -178,18 +182,34 @@ class MainMenu(Menu):
         self.__curr_time = datetime.fromtimestamp(
                 current_time()
             ).strftime("%H:%M:%S")
-            
+
     def _show_status(self):
         self._updatae_time()
-        if self.__subMenu:
+        
+        # updating data
+        try:
+            if current_time() >= (
+                self.__subMenu.get_actual_city_down_time() +
+                    (self.__wait_time)
+            ):
+                self.__subMenu.update_city_data()
+        
+        # offline and no old data
+        except TypeError:
+            pass
+
+        try:
             self._status_message = '{} {}{}C\n{}'.format(
                 self.__subMenu.get_actual_city_full_name(),
-                self.__subMenu.get_actual_city_temp,
+                self.__subMenu.get_actual_city_temp(),
                 chr(223),
                 self.__curr_time
             )
-        else:
-            self._status_message = 'NO SUB MENU\n{}'.format(
+
+        # No old data
+        except (AttributeError, TypeError):
+            self._status_message = '{} NO DATA\n{}'.format(
+                self.__subMenu.get_actual_city_full_name(),
                 self.__curr_time
             )
         self._lcd.clear()
@@ -197,16 +217,62 @@ class MainMenu(Menu):
             self._status_message
         )
 
+        if self.__subMenu.is_Offline_actual_city():
+            self._lcd.message(' OFFLINE')
+            
+            # maybe is offline now?
+            self.__subMenu.update_city_data()
+
 
 class WeatherMenu(MainMenu):
 
-    def main_loop(self):
-        try:
-            while True:
-                if self._should_close:
-                    break
 
-                # print(self._actual_position) for testint purposes
+    # added new __init__ because of self.__first_city
+    # TODO: find some magic to fix this
+    def __init__(
+        self, lcd_class, prev_button=0,
+        next_button=0, cancel_button=0,
+        ok_button=0, subMenu = False
+    ):
+        self._menu_options = []
+        self._lcd = lcd_class
+        self._actual_position = 0
+        self._should_close = False
+        self.__first_city = True
+
+        if subMenu:
+            self.__subMenu = subMenu
+        else:
+            self.__subMenu = False
+
+        # settings of GPIO pins
+        self._pins = (
+            prev_button,
+            ok_button,
+            cancel_button,
+            next_button
+        )
+        GPIO.setmode(GPIO.BCM)
+        for pin in self._pins:
+            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+
+    # like above, beacause of self.__first_city
+    def add_menu_option(self, option):
+        self._menu_options.append(option)
+        if self.__first_city:
+            self._actual_city = self._menu_options[
+                self._actual_position
+            ]
+            self.__first_city = False
+            self.update_city_data()
+
+
+    def main_loop(self):
+        self._actual_position = 0
+        try:
+            while not self._should_close:
+
                 time.sleep(0.1)
                 self._lcd.clear()
                 self._show_options()
@@ -221,14 +287,16 @@ class WeatherMenu(MainMenu):
 
                 # choosing item
                 if not GPIO.input(self._pins[1]):
+                    time.sleep(0.2)
                     self._actual_city = self._menu_options[
                         self._actual_position
                     ]
                     self._lcd.clear()
                     self._lcd.message(
                         'You choosed\n' +
-                        self.get_actual_city_name()
+                        self.get_actual_city_full_name()
                     )
+                    self.update_city_data()
                     time.sleep(2)
                     break
 
@@ -239,23 +307,38 @@ class WeatherMenu(MainMenu):
 
         except AttributeError:
             self._lcd.clear()
-            self._lcd.message('NO OPTIONS')
+            self._lcd.message('NO OPTIONS 2')
 
+        # to run again after closing!
+        self._should_close = False
 
     def _closing(self):
         self._should_close = True
-    
+
     def get_actual_city_name(self):
-        
+
         return self._actual_city.get_name()
-    
+
     def get_actual_city_temp(self):
-        
+
         return self._actual_city.current_temp()
-    
+
     def get_actual_city_full_name(self):
-        
+
         return self._actual_city.get_city_full_name()
+    
+    def get_actual_city_down_time(self):
+        
+        return self._actual_city.get_city_download_time()
+        
+    def update_city_data(self):
+        self._actual_city.weather_json()
+    
+    def is_Offline_actual_city(self):
+        return self._actual_city.is_Offline()
+    
+    def is_Data_actual_city(self):
+        return self._actual_city.check_data()
 
 
 class MenuOption(object):
@@ -318,7 +401,7 @@ class CityOption(MenuOption):
         self._if_signed = False
         self.__latitude = city['latitude']
         self.__longitude = city['longitude']
-        
+
         self.__weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
             secret_key,
             self.__latitude,
@@ -330,8 +413,8 @@ class CityOption(MenuOption):
                 self._option_name
             )
         )
-        self._noData = True
         self._json_weather = False
+        self._isOffline = False
 
     def weather_json(self):
         try:
@@ -339,19 +422,18 @@ class CityOption(MenuOption):
                 self.__weather_api_url
                 )
             save_json_file(
-                self._json_weather, self._old_data_path
+                self._old_data_path, self._json_weather
                 )
             self._isOffline = False
             self._noData = False
         except URLError:
             try:
+                self._isOffline = True
                 self._json_weather = load_json_file(
                     self._old_data_path
                 )
-                self._isOffline = True
-                self._noData = False
             except FileNotFoundError:
-                self._noData = True
+                self._isData = False
 
 
     def current_temp(self):
@@ -373,8 +455,13 @@ class CityOption(MenuOption):
     def get_city_full_name(self):
         return self._city_full_name
 
+    def get_city_download_time(self):
+        return int(
+            self._json_weather['currently']['time']
+        )
+    
+    def check_data(self):
+        return self._isData
+    
     def is_Offline(self):
         return self._isOffline
-
-    def is_Data(self):
-        return not self._noData

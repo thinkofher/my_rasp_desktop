@@ -5,7 +5,8 @@ from tools.tools import (
     )
 from tools.lcdgui import (
     Menu, MainMenu,
-    MenuOption, CityOption
+    MenuOption, CityOption,
+    WeatherMenu
     )
 
 from tools.lcd import lcd
@@ -16,5 +17,6 @@ __all__ = [
     'load_secret_key', 'current_time',
     'lcd',
     'Menu', 'MainMenu',
-    'MenuOption', 'CityOption'
+    'MenuOption', 'CityOption',
+    'WeatherMenu'
 ]

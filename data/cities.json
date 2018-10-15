@@ -16,5 +16,17 @@
         "visible_name": "EL",
         "latitude": 51.7594,
         "longitude": 19.4572
+    },
+    "Warsaw":{
+        "name": "Warsaw",
+        "visible_name": "WI",
+        "latitude": 52.2297,
+        "longitude": 21.01222
+    },
+    "Gdynia":{
+            "name": "Gdynia",
+            "visible_name": "GA",
+            "latitude": 54.5189,
+            "longitude": 18.5305
     }
 }
