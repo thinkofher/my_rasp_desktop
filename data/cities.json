@@ -1,16 +1,19 @@
 {
     "Cracow":{
         "name": "Cracow",
+        "visible_name": "KR",
         "latitude": 50.0646,
         "longitude": 19.9449
     },
     "Kielce":{
         "name": "Kielce",
+        "visible_name": "TK",
         "latitude": 50.8661,
         "longitude": 20.6286
     },
     "Lodz":{
         "name": "Lodz",
+        "visible_name": "EL",
         "latitude": 51.7594,
         "longitude": 19.4572
     }

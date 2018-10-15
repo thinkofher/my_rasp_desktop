@@ -53,78 +53,7 @@ class Menu(object, metaclass=abc.ABCMeta):
 
     def what_position(self):
         return self._actual_position
-
-
-class MainMenu(Menu):
-
-    def __init__(
-        self, lcd_class, prev_button=0,
-        next_button=0, cancel_button=0,
-        ok_button=0, subMenu = False
-    ):
-        self._menu_options = []
-        self._lcd = lcd_class
-        self._actual_position = 0
-        self._should_close = False
-
-        if subMenu:
-            self.__subMenu = subMenu
-
-        # settings of GPIO pins
-        self._pins = (
-            prev_button,
-            ok_button,
-            cancel_button,
-            next_button
-        )
-        GPIO.setmode(GPIO.BCM)
-        for pin in self._pins:
-            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    def main_loop(self):
-        try:
-            while True:
-                if self._should_close:
-                    lcd.clear()
-                    self._lcd.message('Goodbye!')
-                    time.sleep(2)
-                    self._lcd.clear()
-                    break
-
-                print(self._actual_position)
-                time.sleep(0.1)
-                self._lcd.clear()
-                self._show_options()
-
-                # moving in menu
-                if not GPIO.input(self._pins[0]):
-                    self._previous_opt()
-                    time.sleep(0.2)
-                if not GPIO.input(self._pins[3]):
-                    self._next_opt()
-                    time.sleep(0.2)
-
-                # choosing item
-                if not GPIO.input(self._pins[1]):
-                    choosen_one = self._menu_options[
-                        self._actual_position
-                    ].get_name()
-                    self._lcd.clear()
-                    self._lcd.message(
-                        'You choosed\n' +
-                        choosen_one
-                    )
-                    time.sleep(2)
-
-                # closing app
-                if not GPIO.input(self._pins[2]):
-                    time.sleep(0.2)
-                    self._closing()
-
-        except AttributeError:
-            self._lcd.clear()
-            self._lcd.message('NO OPTIONS')
-
+    
     def _show_options(self):
         try:
             for i in range(len(self._menu_options)):
@@ -160,9 +89,76 @@ class MainMenu(Menu):
             self._lcd.clear()
             self._lcd.message('NO OPTIONS')
 
+
+class MainMenu(Menu):
+
+    def __init__(
+        self, lcd_class, prev_button=0,
+        next_button=0, cancel_button=0,
+        ok_button=0, subMenu = False
+    ):
+        self._menu_options = []
+        self._lcd = lcd_class
+        self._actual_position = 0
+        self._should_close = False
+
+        if subMenu:
+            self.__subMenu = subMenu
+        else:
+            self.__subMenu = False
+
+        # settings of GPIO pins
+        self._pins = (
+            prev_button,
+            ok_button,
+            cancel_button,
+            next_button
+        )
+        GPIO.setmode(GPIO.BCM)
+        for pin in self._pins:
+            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    def main_loop(self):
+        try:
+            while True:
+                if self._should_close:
+                    self._lcd.clear()
+                    self._lcd.message('Goodbye!')
+                    time.sleep(2)
+                    self._lcd.clear()
+                    break
+
+                # print(self._actual_position) for testing purposes
+                time.sleep(0.2)
+                self._show_status()
+
+                # TODO: maybe just delete this?
+                if not GPIO.input(self._pins[0]):
+                    time.sleep(0.2)
+                    pass
+                if not GPIO.input(self._pins[3]):
+                    time.sleep(0.2)
+                    pass
+
+                # choosing item
+                if not GPIO.input(self._pins[1]):
+                    try:
+                        __subMenu.main_loop()
+                    except NameError:
+                        pass
+
+                # closing app
+                if not GPIO.input(self._pins[2]):
+                    time.sleep(0.2)
+                    self._closing()
+
+        except AttributeError:
+            self._lcd.clear()
+            self._lcd.message('NO OPTIONS')
+
     def _closing(self):
         while True:
-            time.sleep(0.1)
+            time.sleep(0.2)
             self._lcd.clear()
             self._lcd.message('Are you sure?')
             self._lcd.message('\nB: Yes     R: No')
@@ -182,7 +178,84 @@ class MainMenu(Menu):
         self.__curr_time = datetime.fromtimestamp(
                 current_time()
             ).strftime("%H:%M:%S")
+            
+    def _show_status(self):
+        self._updatae_time()
+        if self.__subMenu:
+            self._status_message = '{} {}{}C\n{}'.format(
+                self.__subMenu.get_actual_city_full_name(),
+                self.__subMenu.get_actual_city_temp,
+                chr(223),
+                self.__curr_time
+            )
+        else:
+            self._status_message = 'NO SUB MENU\n{}'.format(
+                self.__curr_time
+            )
+        self._lcd.clear()
+        self._lcd.message(
+            self._status_message
+        )
 
+
+class WeatherMenu(MainMenu):
+
+    def main_loop(self):
+        try:
+            while True:
+                if self._should_close:
+                    break
+
+                # print(self._actual_position) for testint purposes
+                time.sleep(0.1)
+                self._lcd.clear()
+                self._show_options()
+
+                # moving in menu
+                if not GPIO.input(self._pins[0]):
+                    self._previous_opt()
+                    time.sleep(0.2)
+                if not GPIO.input(self._pins[3]):
+                    self._next_opt()
+                    time.sleep(0.2)
+
+                # choosing item
+                if not GPIO.input(self._pins[1]):
+                    self._actual_city = self._menu_options[
+                        self._actual_position
+                    ]
+                    self._lcd.clear()
+                    self._lcd.message(
+                        'You choosed\n' +
+                        self.get_actual_city_name()
+                    )
+                    time.sleep(2)
+                    break
+
+                # closing app
+                if not GPIO.input(self._pins[2]):
+                    time.sleep(0.2)
+                    self._closing()
+
+        except AttributeError:
+            self._lcd.clear()
+            self._lcd.message('NO OPTIONS')
+
+
+    def _closing(self):
+        self._should_close = True
+    
+    def get_actual_city_name(self):
+        
+        return self._actual_city.get_name()
+    
+    def get_actual_city_temp(self):
+        
+        return self._actual_city.current_temp()
+    
+    def get_actual_city_full_name(self):
+        
+        return self._actual_city.get_city_full_name()
 
 
 class MenuOption(object):
@@ -225,9 +298,12 @@ class MenuOption(object):
 class CityOption(MenuOption):
 
 
-    def __init__(self, city, secret_key, visible_name=False):
+    def __init__(self, city, secret_key, visible_name=False, full_name=False):
 
         self._option_name = city['name']
+
+        if full_name:
+            self._city_full_name = city['name']
 
         if visible_name:
             self._option_name = visible_name
@@ -242,7 +318,7 @@ class CityOption(MenuOption):
         self._if_signed = False
         self.__latitude = city['latitude']
         self.__longitude = city['longitude']
-
+        
         self.__weather_api_url = "https://api.darksky.net/forecast/{}/{},{}?{}".format(
             secret_key,
             self.__latitude,
@@ -255,7 +331,7 @@ class CityOption(MenuOption):
             )
         )
         self._noData = True
-
+        self._json_weather = False
 
     def weather_json(self):
         try:
@@ -294,6 +370,8 @@ class CityOption(MenuOption):
                     )
                 )
 
+    def get_city_full_name(self):
+        return self._city_full_name
 
     def is_Offline(self):
         return self._isOffline
