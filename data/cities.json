@@ -28,5 +28,11 @@
             "visible_name": "GA",
             "latitude": 54.5189,
             "longitude": 18.5305
+    },
+    "Busko":{
+            "name": "Busko",
+            "visible_name": "TBU",
+            "latitude": 50.4704,
+            "longitude": 20.7192
     }
 }
