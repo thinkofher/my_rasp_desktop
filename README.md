@@ -1,2 +1,5 @@
-# my_rasp_desktop
-small app for weather and stuff for raspberry pi and lcd hat
+# My Raspberry Pi Desktop App
+
+![](https://github.com/thinkofher/my_rasp_desktop/blob/master/data/visual.JPG)
+
+## Description
